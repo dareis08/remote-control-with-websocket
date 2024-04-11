@@ -11,6 +11,7 @@
 #include <WiFi.h>
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
+#include <Adafruit_NeoPixel.h>
 
 // ----------------------------------------------------------------------------
 // Definition of macros
@@ -19,6 +20,7 @@
 #define LED_PIN   38
 #define BTN_PIN   19
 #define HTTP_PORT 80
+#define NUMPIXELS 1
 
 // ----------------------------------------------------------------------------
 // Definition of global constants
@@ -97,6 +99,8 @@ struct Button {
 // Definition of global variables
 // ----------------------------------------------------------------------------
 
+Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+
 Led    onboard_led = { LED_BUILTIN, false };
 Led    led         = { LED_PIN, false };
 Button button      = { BTN_PIN, HIGH, 0, 0 };
@@ -130,7 +134,7 @@ void initWiFi() {
       Serial.print(".");
       delay(500);
   }
-  Serial.printf(" %s\n", WiFi.localIP().toString().c_str());
+  Serial.printf("\nConnected on IP: %s\n", WiFi.localIP().toString().c_str());
 }
 
 // ----------------------------------------------------------------------------
@@ -230,6 +234,8 @@ void setup() {
     initWiFi();
     initWebSocket();
     initWebServer();
+    pixels.begin();
+    pixels.setBrightness(20);
 }
 
 // ----------------------------------------------------------------------------
@@ -243,6 +249,15 @@ void loop() {
 
     if (button.pressed()) {
         led.on = !led.on;
+        if (led.on){
+            // set pixel GREEN
+            pixels.fill(0x00FF00);
+        }
+        if (!led.on){
+            // set pixel RED
+            pixels.fill(0xFF0000);
+        }
+        pixels.show();
         notifyClients();
     }
     
