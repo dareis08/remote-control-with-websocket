@@ -16,8 +16,8 @@
 // Definition of macros
 // ----------------------------------------------------------------------------
 
-#define LED_PIN   26
-#define BTN_PIN   22
+#define LED_PIN   38
+#define BTN_PIN   19
 #define HTTP_PORT 80
 
 // ----------------------------------------------------------------------------
@@ -28,8 +28,8 @@
 const uint8_t DEBOUNCE_DELAY = 10; // in milliseconds
 
 // WiFi credentials
-const char *WIFI_SSID = "YOUR_WIFI_SSID";
-const char *WIFI_PASS = "YOUR_WIFI_PASSWORD";
+const char *WIFI_SSID = "PunaHele";
+const char *WIFI_PASS = "wemetatthezoo";
 
 // ----------------------------------------------------------------------------
 // Definition of the LED component
