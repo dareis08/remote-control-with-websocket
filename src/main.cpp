@@ -17,7 +17,7 @@
 // Definition of macros
 // ----------------------------------------------------------------------------
 
-#define LED_PIN   38
+#define LED_PIN   48
 #define BTN_PIN   19
 #define HTTP_PORT 80
 #define NUMPIXELS 1
@@ -99,7 +99,7 @@ struct Button {
 // Definition of global variables
 // ----------------------------------------------------------------------------
 
-Adafruit_NeoPixel pixels(NUMPIXELS, LED_PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel pixels(NUMPIXELS, LED_BUILTIN, NEO_GRB + NEO_KHZ800);
 
 Led    onboard_led = { LED_BUILTIN, false };
 Led    led         = { LED_PIN, false };
@@ -108,6 +108,20 @@ Button button      = { BTN_PIN, HIGH, 0, 0 };
 AsyncWebServer server(HTTP_PORT);
 AsyncWebSocket ws("/ws");
 
+// 
+void updatePixel(){
+    if (led.on){
+        // set pixel GREEN
+        pixels.fill(0x00FF00);
+        Serial.println("Light is ON/Green");
+    }
+    if (!led.on){
+        // set pixel RED
+        pixels.fill(0xFF0000);
+        Serial.println("Light is OFF/Red");
+    }
+    pixels.show();
+}
 // ----------------------------------------------------------------------------
 // SPIFFS initialization
 // ----------------------------------------------------------------------------
@@ -185,6 +199,8 @@ void handleWebSocketMessage(void *arg, uint8_t *data, size_t len) {
         const char *action = json["action"];
         if (strcmp(action, "toggle") == 0) {
             led.on = !led.on;
+            Serial.println("Toggle pressed");
+            // updatePixel();
             notifyClients();
         }
 
@@ -235,32 +251,35 @@ void setup() {
     initWebSocket();
     initWebServer();
     pixels.begin();
-    pixels.setBrightness(20);
+    pixels.setBrightness(50);
 }
 
 // ----------------------------------------------------------------------------
 // Main control loop
 // ----------------------------------------------------------------------------
+unsigned long previousMillis = 0;
 
 void loop() {
     ws.cleanupClients();
 
     button.read();
+    unsigned long currentMillis = millis();
 
     if (button.pressed()) {
+        Serial.println("Button pressed");
         led.on = !led.on;
-        if (led.on){
-            // set pixel GREEN
-            pixels.fill(0x00FF00);
-        }
-        if (!led.on){
-            // set pixel RED
-            pixels.fill(0xFF0000);
-        }
-        pixels.show();
+        updatePixel();
         notifyClients();
     }
     
+    // every 5 sec, flip led
+    if (currentMillis - previousMillis >= 5000){
+        previousMillis = currentMillis;
+        Serial.println("clock 5s toggle");
+        // led.on = !led.on;
+        // updatePixel();
+    }
+
     onboard_led.on = millis() % 1000 < 50;
 
     led.update();
